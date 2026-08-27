@@ -13,3 +13,6 @@
 
 # TypeScript
 *.tsbuildinfo
+
+# pnpm
+.pnpm-store/
