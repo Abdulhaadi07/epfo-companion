@@ -1,30 +1,35 @@
 import Link from "next/link";
 import { PageContainer } from "@/components/layout/page-container";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { ClaimOverview } from "@/components/home/claim-overview";
+import { ClaimQuestion } from "@/components/home/claim-question";
+import { CitizenSummary } from "@/components/home/citizen-summary";
 import { createDemoScenario } from "@/domain/demo";
+import { getClaimPresentation } from "@/lib/claim-presentation";
 import { requireDemoSession } from "@/lib/demo-session";
+
+function formatCurrencyInPaise(amountInPaise: number) {
+  return new Intl.NumberFormat("en-IN", { currency: "INR", maximumFractionDigits: 2, style: "currency" }).format(amountInPaise / 100);
+}
+
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${date}T00:00:00Z`));
+}
 
 export default async function CitizenHomePage() {
   const session = await requireDemoSession();
-
   const scenario = createDemoScenario(session.scenarioId);
+  const presentation = getClaimPresentation(scenario.claim.status);
 
   return (
-    <section className="py-16 sm:py-24">
-      <PageContainer className="max-w-4xl">
-        <div className="rounded-3xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-10">
-          <p className="eyebrow">Your demo home</p>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">Welcome, {scenario.citizen.name}</h1>
-          <p className="mt-5 text-body-lg">This is a small proof that the synthetic demo session is active. The full citizen home will be built in a later step.</p>
+    <section className="py-12 sm:py-16">
+      <PageContainer className="max-w-5xl">
+        <div className="mb-9 flex flex-col gap-3 sm:mb-12 sm:flex-row sm:items-end sm:justify-between"><div><p className="eyebrow">Your demo home</p><h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">Welcome back, {scenario.citizen.name}</h1><p className="mt-4 text-body-lg">Here is the latest view of your PF task.</p></div><p className="text-xs font-medium text-[var(--brand-dark)]">Synthetic account · Demo only</p></div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <article className="rounded-2xl border border-teal-200 bg-teal-50 p-5"><p className="text-sm font-semibold text-[var(--brand-dark)]">Selected demo scenario</p><p className="mt-2 text-xl font-bold text-slate-950">{scenario.label}</p><p className="mt-2 text-sm leading-6 text-slate-700">Synthetic citizen: {session.citizenId}</p></article>
-            <article className="rounded-2xl border border-sky-200 bg-sky-50 p-5"><p className="text-sm font-semibold text-sky-800">Example claim status</p><div className="mt-3"><StatusBadge severity="info">Under verification</StatusBadge></div><p className="mt-3 text-sm leading-6 text-slate-700">Your example claim is being checked. No action is required in this demo.</p></article>
-          </div>
+        <ClaimOverview presentation={presentation} />
+        <CitizenSummary balance={formatCurrencyInPaise(scenario.pfAccount.balanceInPaise)} employer={scenario.employment.employerName} employmentDates={`${formatDate(scenario.employment.startDate)} – ${formatDate(scenario.employment.endDate)}`} readiness={presentation.readinessSummary} />
+        <ClaimQuestion />
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link href="/claim/status" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--brand)] px-5 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">View example claim status</Link><Link href="/" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[var(--border)] px-5 text-sm font-semibold text-slate-800 hover:bg-slate-50">Explore public home</Link></div>
-          <p className="mt-8 border-t border-[var(--border)] pt-5 text-xs font-medium leading-5 text-[var(--brand-dark)]">Prototype&nbsp; · &nbsp;Synthetic data&nbsp; · &nbsp;Not an official EPFO service</p>
-        </div>
+        <div className="mt-8 flex flex-col gap-3 border-t border-[var(--border)] pt-6 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs leading-5 text-[var(--muted)]">This account uses synthetic data. It is not an official EPFO service.</p><Link href="/" className="inline-flex min-h-11 items-center font-semibold text-[var(--brand-dark)] underline-offset-4 hover:underline">Explore public experience</Link></div>
       </PageContainer>
     </section>
   );

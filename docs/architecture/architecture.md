@@ -1,14 +1,24 @@
+
+---
+
+# 3. `docs/architecture/architecture.md`
+
+Replace it with:
+
+```md
 # EPFO Companion — Architecture
 
 ## 1. Architecture Goal
 
-Build a small, maintainable, testable web application that demonstrates an improved EPFO citizen experience while keeping the domain state deterministic and government dependencies fully synthetic.
+Build a maintainable, testable, responsive web application that demonstrates an improved EPFO citizen experience while keeping government dependencies fully synthetic.
+
+The prototype should feel like a credible account-based public-service platform while remaining technically separated from real EPFO systems.
 
 ---
 
 # 2. Core Architecture Principle
 
-> **Truth belongs to the domain. Intelligence belongs to the assistant. Presentation belongs to the experience layer.**
+> **Truth belongs to the domain. Persistence belongs to the repository. Intelligence belongs to the assistant. Presentation belongs to the experience layer.**
 
 This means:
 
@@ -21,6 +31,15 @@ Determines:
 - eligibility/readiness
 - reason codes
 - permitted actions
+
+### Repository
+
+Handles:
+
+- persistence
+- retrieval
+- updates
+- mapping between persistent records and domain entities
 
 ### AI
 
@@ -56,5 +75,6 @@ Next.js
    ├── Experience
    ├── Application
    ├── Domain
-   ├── Synthetic Infrastructure
+   ├── Repository
+   ├── Synthetic Data / Seed
    └── AI Integration

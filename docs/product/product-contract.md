@@ -1,10 +1,18 @@
+
+---
+
+# 2. `docs/product/product-contract.md`
+
+Replace it with:
+
+```md
 # EPFO Companion — Product Contract
 
 ## 1. Product
 
 **Working name:** EPFO Companion
 
-EPFO Companion is an independent citizen-first prototype that demonstrates how EPFO-related services can be presented as understandable, guided tasks rather than as government-system terminology and status codes.
+EPFO Companion is an independent citizen-first prototype that demonstrates how EPFO-related services can be presented as understandable, guided tasks rather than as government-system terminology and opaque statuses.
 
 It is a prototype for the BuildWhatMovesIndia hackathon.
 
@@ -39,15 +47,16 @@ Our primary user is an ordinary employee with a PF account who:
 - uses a smartphone or browser
 - may have limited familiarity with EPFO terminology
 - may not understand claim/form terminology
-- may be comfortable using simple English or Hinglish
-- becomes concerned when money or claims appear stuck
+- may be comfortable using their preferred Indian language
+- may have limited digital literacy
+- may become concerned when money or claims appear stuck
 - wants to know what to do rather than how government systems are structured
 
 ---
 
 ## 4. Primary Job To Be Done
 
-> "I want to get my PF, understand what is happening to my claim, and know exactly what I need to do next without becoming an expert in EPFO processes."
+> "I want to get my PF, understand what is happening with my claim, and know exactly what I need to do next without becoming an expert in EPFO processes."
 
 ---
 
@@ -106,6 +115,7 @@ Public-facing experience:
 - about
 - footer
 - contextual CTA
+- language selection
 
 ### Accomplish
 
@@ -133,149 +143,75 @@ AI-assisted experience:
 
 ---
 
-## 8. AI Role
+## 8. Account and Authentication Experience
 
-OpenAI is a meaningful product capability, not a decorative chatbot.
+The prototype uses synthetic persistent user accounts.
 
-AI may:
+A user's account may contain:
 
-- understand a citizen's natural-language request
-- classify intent
-- explain deterministic system state in plain language
-- explain known rejection/problem reasons
-- answer contextual questions
-- recommend an action from a controlled list of allowed actions
+- synthetic identity
+- authentication credentials
+- preferred language
+- preferred region
+- employment records
+- PF account
+- claim history
 
-AI must not:
+The user experience should feel like a realistic account-based service.
 
-- invent eligibility rules
-- invent government policy
-- invent claim statuses
-- override deterministic business rules
-- directly perform unrestricted account mutations
-- claim that a real government action has occurred
+Credentials must be synthetic and passwords must never be stored in plaintext.
 
----
+The reviewer journey should support a frictionless sample-account entry.
 
-## 9. Synthetic Data
-
-The prototype must use synthetic data only.
-
-Examples include:
-
-- demo UAN identifiers
-- fictional citizen names
-- fictional employers
-- fictional claim IDs
-- synthetic balances
-- synthetic bank information
-
-No real personal information may be used.
+A clearly labelled sample account or one-click "Try a sample account" pathway may be provided.
 
 ---
 
-## 10. Demo Scenarios
+## 9. Data and Persistence
 
-The application should support controlled synthetic scenarios that demonstrate the system's behavior.
+The prototype uses persistent synthetic data.
 
-### Scenario A — Ready / Happy Path
+The database is not connected to live EPFO.
 
-Citizen is eligible and successfully submits a claim.
+Persistent data may represent:
 
-### Scenario B — Under Verification
+- synthetic users
+- credentials
+- profile information
+- preferred language
+- preferred region
+- employment
+- PF accounts
+- claims
+- claim events
 
-Claim has been submitted and is currently being verified.
+The database represents the simulated state of the prototype.
 
-No user action is required.
-
-### Scenario C — Action Required
-
-A controlled issue such as a synthetic bank-information mismatch requires user action.
-
-### Scenario D — Rejected
-
-A claim is rejected for a synthetic reason and the product explains the problem and guides the citizen toward resolution/resubmission.
-
----
-
-## 11. Success Criteria
-
-The prototype should enable a first-time citizen to:
-
-1. understand what they are trying to do
-2. understand whether they are ready
-3. complete the simulated claim journey
-4. understand the current claim state
-5. know whether action is required
-6. understand why a problem occurred
-7. know what to do next
-
-### Primary experience metric
-
-A first-time user should be able to correctly answer:
-
-- What is happening?
-- Do I need to do anything?
-- What happens next?
-
-without external assistance.
+It does not represent real EPFO records.
 
 ---
 
-## 12. Platform Requirements
+## 10. Internationalization
 
-The project is a responsive web application.
+The product supports the 22 Scheduled Languages of India.
 
-Reviewers must not need to install a mobile app.
+### First-visit language experience
 
-The experience must work through a browser URL.
+On the first visit, the user should be invited to choose their preferred language.
 
-If authentication is used, provide clearly labelled synthetic/demo credentials and/or a one-click demo account.
+The selection experience supports two paths:
 
----
+### Region-assisted selection
 
-## 13. Out of Scope
+The user selects a region/state.
 
-The prototype will not:
+The application suggests a sensible default language associated with that region.
 
-- connect to live EPFO systems
-- access live government APIs
-- submit real claims
-- perform real financial transactions
-- use real Aadhaar/PAN/UAN information
-- use real OTPs
-- use real banking credentials
-- scrape restricted/private information
-- replace the complete EPFO ecosystem
-- implement every EPFO service
+Example:
 
----
+```text
+Region
+Telangana
 
-## 14. Product Positioning
-
-The product should be presented as:
-
-> A citizen-first experience layer for understanding and navigating complex EPFO journeys.
-
-Not:
-
-> A replacement for EPFO.
-
-Not:
-
-> An official government application.
-
----
-
-## 15. Design Principle
-
-Preserve useful information and services that citizens need, but improve the way they are:
-
-- discovered
-- organized
-- explained
-- prioritized
-- navigated
-- completed
-
-The project is a reframing of the experience, not an attempt to discard the underlying service content.
+Suggested language
+తెలుగు — Telugu

@@ -4,9 +4,11 @@
 
 EPFO Companion is an independent citizen-first prototype that demonstrates a better way to understand and complete EPFO-related tasks.
 
-It is NOT an official EPFO product and must never imply government approval, affiliation, endorsement, or integration.
+It is NOT an official EPFO product and must never imply government approval, affiliation, endorsement, partnership, or live government integration.
 
 The prototype uses synthetic data and mocked government dependencies only.
+
+The experience should feel realistic and polished while remaining honest about its prototype nature.
 
 ---
 
@@ -17,7 +19,7 @@ Before modifying the repository:
 1. Read this file.
 2. Read `docs/product/product-contract.md`.
 3. Read `docs/product/user-journey.md` when the task affects the user experience or journey.
-4. Read `docs/architecture/architecture.md` when the task affects architecture, data flow, AI, APIs, or infrastructure.
+4. Read `docs/architecture/architecture.md` when the task affects architecture, data flow, AI, APIs, persistence, authentication, internationalization, or infrastructure.
 5. Inspect the existing implementation before creating or modifying files.
 
 Do not assume an architecture or feature that conflicts with the project documentation.
@@ -50,7 +52,9 @@ If no action is required, explicitly say so.
 
 Business rules, eligibility, claim status, allowed transitions, and permitted actions belong to the deterministic application/domain layer.
 
-The AI model must not invent or override these rules.
+The database stores persistent state.
+
+The domain layer determines whether state transitions are valid.
 
 ### 5. AI assists; it does not control truth
 
@@ -58,7 +62,17 @@ OpenAI is used for intent understanding, explanation, guidance, and conversation
 
 AI must operate only on controlled application context and allowed actions.
 
-### 6. Mobile-first and accessible
+AI must never become the source of truth for government-process state or business rules.
+
+### 6. Realistic experience, synthetic system
+
+The interface should feel like a credible modern public-service platform.
+
+Synthetic implementation details should not unnecessarily make the user experience feel artificial.
+
+However, the product must never falsely imply that a real government transaction has occurred.
+
+### 7. Mobile-first and accessible
 
 Design for:
 
@@ -84,7 +98,7 @@ Never:
 - use real Aadhaar numbers
 - use real PAN details
 - use real OTPs
-- use real bank details
+- use real bank credentials
 - scrape personal or restricted information
 - reverse-engineer private or undocumented government APIs
 - imply that the prototype is an official government product
@@ -92,76 +106,68 @@ Never:
 
 Use synthetic/demo data only.
 
-Clearly communicate within the product that this is a prototype using synthetic data.
+The prototype may use realistic-looking fictional identities and institutions, but they must remain synthetic and must not be presented as real user records.
+
+The product should include a subtle, persistent prototype disclosure appropriate to the interface context, such as:
+
+"Independent prototype • Synthetic data • Not an official EPFO service"
+
+Do not repeatedly use distracting "DEMO" labels throughout the primary experience.
 
 ---
 
-## Engineering Rules
+## Authentication and Credentials
 
-- Use TypeScript throughout the application.
-- Prefer simple, maintainable solutions.
-- Avoid unnecessary dependencies.
-- Keep domain logic independent from UI components.
-- Keep OpenAI integration isolated behind server-side application boundaries.
-- Validate external/model input with schemas.
-- Never expose the OpenAI API key to the browser.
-- Prefer server-side API routes for AI operations.
-- Preserve strong typing.
-- Add tests for domain rules and important user journeys.
-- Do not rewrite unrelated code.
-- Do not introduce a framework or service without a concrete project need.
+Authentication is synthetic and exists to demonstrate realistic account-based journeys.
 
----
+Rules:
 
-## Codex Workflow
+- Never store plaintext passwords.
+- Store only appropriately hashed passwords.
+- Never use real credentials.
+- Never reuse credentials from real services.
+- Never expose password hashes to the client.
+- Authentication logic must run on the server.
+- Sessions must be server-controlled.
+- Sensitive cookies must use appropriate security attributes.
+- User account data must come from persistent synthetic records rather than hardcoded UI text.
 
-For substantial tasks:
+The application may provide clearly labelled sample credentials for reviewers.
 
-1. Inspect the relevant code and documentation.
-2. State the intended approach.
-3. Make the smallest coherent implementation.
-4. Run relevant tests/checks.
-5. Report what changed and any remaining issues.
-
-Do not implement multiple unrelated features in one task unless explicitly requested.
+A one-click "Try a sample account" or equivalent frictionless entry is encouraged for the hackathon experience.
 
 ---
 
-## Product Scope
+## Persistence
 
-The flagship journey is:
+The application uses a relational persistence model for synthetic citizen/account state.
 
-Entry
-→ Intent
-→ Eligibility
-→ Readiness
-→ Review
-→ Submit
-→ Track
-→ Explain
-→ Resolve
-→ Complete
+Current persistence direction:
 
-The flagship problem is:
+- PostgreSQL
+- Drizzle ORM
+- Repository abstraction
 
-> Citizens often see a claim status without understanding what it means, whether they need to act, or what happens next.
+The database should store facts such as:
 
-The prototype should solve that problem exceptionally well rather than attempting to rebuild every EPFO service.
+- synthetic user identity
+- credential metadata
+- preferred language
+- preferred region
+- employment records
+- PF accounts
+- claims
+- claim events
 
----
+The database must not replace domain rules.
 
-## Source of Truth
+Use:
 
-For product decisions:
-
-`docs/product/product-contract.md`
-
-For the detailed journey:
-
-`docs/product/user-journey.md`
-
-For technical architecture:
-
-`docs/architecture/architecture.md`
-
-These documents should be treated as the project's current source of truth.
+```text
+Database
+    ↓
+Repository
+    ↓
+Domain
+    ↓
+Experience
