@@ -8,9 +8,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "latest",
+    "bcryptjs": "latest",
+    "dotenv": "17.4.2",
+    "drizzle-orm": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
@@ -18,12 +25,15 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "latest",
+    "@types/bcryptjs": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "eslint": "^9.0.0",
     "eslint-config-next": "latest",
     "tailwindcss": "latest",
+    "drizzle-kit": "latest",
+    "tsx": "latest",
     "@tailwindcss/postcss": "latest",
     "typescript": "^5.9.3",
     "vitest": "latest"
