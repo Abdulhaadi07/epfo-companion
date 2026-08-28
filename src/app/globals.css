@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #172033;
+  --muted: #526174;
+  --border: #d9e2ec;
+  --brand: #0f766e;
+  --brand-dark: #115e59;
+  --ring: #0f766e;
 }
 
 * {
@@ -14,4 +19,22 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+
+.page-container { width: min(100% - 2rem, 72rem); margin-inline: auto; }
+.eyebrow { color: var(--brand-dark); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; line-height: 1.25rem; }
+.text-display { color: #122033; font-size: clamp(2.25rem, 5vw, 4rem); font-weight: 700; letter-spacing: -0.045em; line-height: 1.05; }
+.text-body-lg { color: #344256; font-size: 1.125rem; line-height: 1.75rem; }
+.text-body-sm { color: var(--muted); font-size: 0.875rem; line-height: 1.5rem; }
+
+@media (min-width: 640px) { .page-container { width: min(100% - 3rem, 72rem); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
