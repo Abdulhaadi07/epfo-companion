@@ -8,17 +8,22 @@ describe("synthetic seed persistence", () => {
     expect(SEED_INSERTION_ORDER).toEqual(["users", "employmentRecords", "pfAccounts", "claims", "claimEvents"]);
     const tableNames = new Map<unknown, string>([[users, "users"], [employmentRecords, "employmentRecords"], [pfAccounts, "pfAccounts"], [claims, "claims"], [claimEvents, "claimEvents"]]);
     const inserted: string[] = [];
+    let transactionCalls = 0;
     const db = {
-      transaction: async (callback: (tx: unknown) => Promise<void>) => callback({
-        insert: (table: typeof users) => ({
-          values: () => ({
-            onConflictDoNothing: async () => { inserted.push(tableNames.get(table) ?? "unknown"); },
+      transaction: async (callback: (tx: unknown) => Promise<void>) => {
+        transactionCalls += 1;
+        return callback({
+          insert: (table: typeof users) => ({
+            values: () => ({
+              onConflictDoNothing: async () => { inserted.push(tableNames.get(table) ?? "unknown"); },
+            }),
           }),
-        }),
-      }),
+        });
+      },
     };
 
     await insertSeedData(db as never, await buildSeedData());
+    expect(transactionCalls).toBe(1);
     expect(inserted).toEqual(SEED_INSERTION_ORDER);
   });
 });

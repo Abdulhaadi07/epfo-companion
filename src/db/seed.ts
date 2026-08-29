@@ -1,11 +1,16 @@
-import "dotenv/config";
-import { createDatabase } from "./client";
+import { config } from "dotenv";
+
+config({
+  path: ".env.local",
+  override: true,
+});
+import { createTransactionalDatabase } from "./transaction-client";
 import { buildSeedData } from "./seed-data";
 import { claimEvents, claims, employmentRecords, pfAccounts, users } from "./schema";
 
 export const SEED_INSERTION_ORDER = ["users", "employmentRecords", "pfAccounts", "claims", "claimEvents"] as const;
 
-export async function insertSeedData(db: ReturnType<typeof createDatabase>, data: Awaited<ReturnType<typeof buildSeedData>>) {
+export async function insertSeedData(db: ReturnType<typeof createTransactionalDatabase>, data: Awaited<ReturnType<typeof buildSeedData>>) {
   await db.transaction(async (tx) => {
     await tx.insert(users).values(data.users).onConflictDoNothing();
     await tx.insert(employmentRecords).values(data.employmentRecords).onConflictDoNothing();
@@ -16,10 +21,14 @@ export async function insertSeedData(db: ReturnType<typeof createDatabase>, data
 }
 
 async function seed() {
-  const db = createDatabase();
-  const data = await buildSeedData();
-  await insertSeedData(db, data);
-  console.log(`Seeded ${data.users.length} synthetic users and ${data.claims.length} claims.`);
+  const db = createTransactionalDatabase();
+  try {
+    const data = await buildSeedData();
+    await insertSeedData(db, data);
+    console.log(`Seeded ${data.users.length} synthetic users and ${data.claims.length} claims.`);
+  } finally {
+    await db.$client.end();
+  }
 }
 
 if (process.argv[1]?.endsWith("seed.ts")) {

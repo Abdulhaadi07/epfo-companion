@@ -21,20 +21,22 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "ws": "latest",
     "zod": "latest"
   },
   "devDependencies": {
     "@eslint/eslintrc": "latest",
+    "@tailwindcss/postcss": "latest",
     "@types/bcryptjs": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@types/ws": "^8.18.1",
+    "drizzle-kit": "latest",
     "eslint": "^9.0.0",
     "eslint-config-next": "latest",
     "tailwindcss": "latest",
-    "drizzle-kit": "latest",
     "tsx": "latest",
-    "@tailwindcss/postcss": "latest",
     "typescript": "^5.9.3",
     "vitest": "latest"
   }
