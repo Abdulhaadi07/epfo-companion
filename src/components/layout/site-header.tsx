@@ -1,13 +1,17 @@
 import Link from "next/link";
-import { signOutDemoSession } from "@/lib/demo-session";
+import { signOutSession } from "@/lib/demo-session";
 import { PageContainer } from "./page-container";
 import { MobileNavigation } from "./mobile-navigation";
 import { getNavigation } from "./navigation";
 
-type SiteHeaderProps = { isAuthenticated: boolean };
+type SiteHeaderProps = {
+  isAuthenticated: boolean;
+  displayName?: string;
+};
 
-export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
+export function SiteHeader({ isAuthenticated, displayName }: SiteHeaderProps) {
   const navigation = getNavigation(isAuthenticated);
+  const accountLabel = displayName ?? "My account";
 
   return (
     <header className="relative border-b border-[var(--border)] bg-white">
@@ -22,13 +26,13 @@ export function SiteHeader({ isAuthenticated }: SiteHeaderProps) {
             {navigation.map((item) => <Link key={item.href} href={item.href} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950">{item.label}</Link>)}
             {isAuthenticated ? (
               <details className="relative ml-2">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg border border-[var(--brand)] px-4 text-sm font-semibold text-[var(--brand-dark)] marker:hidden [&::-webkit-details-marker]:hidden">Demo Citizen <span aria-hidden="true">⌄</span></summary>
-                <div className="absolute right-0 z-10 mt-2 w-48 rounded-xl border border-[var(--border)] bg-white p-2 shadow-lg"><form action={signOutDemoSession}><button type="submit" className="min-h-11 w-full rounded-lg px-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100">Sign out</button></form></div>
+                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg border border-[var(--brand)] px-4 text-sm font-semibold text-[var(--brand-dark)] marker:hidden [&::-webkit-details-marker]:hidden">{accountLabel} <span aria-hidden="true">⌄</span></summary>
+                <div className="absolute right-0 z-10 mt-2 w-48 rounded-xl border border-[var(--border)] bg-white p-2 shadow-lg"><form action={signOutSession}><button type="submit" className="min-h-11 w-full rounded-lg px-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100">Sign out</button></form></div>
               </details>
             ) : <Link href="/login" className="ml-2 rounded-lg border border-[var(--brand)] px-4 py-2 text-sm font-semibold text-[var(--brand-dark)] transition-colors hover:bg-teal-50">Sign in</Link>}
           </nav>
 
-          <MobileNavigation isAuthenticated={isAuthenticated} navigation={navigation} signOutAction={signOutDemoSession} />
+          <MobileNavigation isAuthenticated={isAuthenticated} navigation={navigation} signOutAction={signOutSession} displayName={accountLabel} />
         </div>
       </PageContainer>
     </header>

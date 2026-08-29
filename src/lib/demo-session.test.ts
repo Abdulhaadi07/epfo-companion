@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const cookieStore = {
   value: undefined as string | undefined,
@@ -12,16 +12,21 @@ vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 
 import { redirect } from "next/navigation";
 import { AUTHENTICATED_NAVIGATION, getNavigation } from "../components/layout/navigation";
-import { enterDemoSession, redirectIfDemoSession, requireDemoSession, signOutDemoSession, type DemoSession } from "./demo-session";
+import { createSession, getSession, redirectIfSession, requireSession, signOutSession, type UserSession } from "./demo-session";
+import { createSessionToken } from "./session-token";
 
-const DEFAULT_DEMO_SESSION: DemoSession = { citizenId: "demo-citizen-001", scenarioId: "UNDER_VERIFICATION" };
+const TEST_SECRET = "test-session-secret";
+const NOW = 1_700_000_000;
+const USER_SESSION: UserSession = { userId: "synthetic-user-under_verification" };
 
-function encoded(session: typeof DEFAULT_DEMO_SESSION) {
-  return Buffer.from(JSON.stringify(session), "utf8").toString("base64url");
+function signedSession(userId = USER_SESSION.userId, now = NOW) {
+  return createSessionToken(userId, { secret: TEST_SECRET, now });
 }
 
-describe("demo session behavior", () => {
+describe("user session behavior", () => {
   beforeEach(() => {
+    process.env.AUTH_SESSION_SECRET = TEST_SECRET;
+    vi.spyOn(Date, "now").mockReturnValue(NOW * 1000);
     cookieStore.value = undefined;
     cookieStore.get.mockImplementation(() => cookieStore.value ? { value: cookieStore.value } : undefined);
     cookieStore.set.mockClear();
@@ -29,34 +34,63 @@ describe("demo session behavior", () => {
     vi.mocked(redirect).mockClear();
   });
 
-  it("redirects logged-out access to the citizen home guard", async () => {
-    await requireDemoSession();
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("redirects unauthenticated access away from /home", async () => {
+    await requireSession();
     expect(redirect).toHaveBeenCalledWith("/login");
   });
 
-  it("allows logged-in access to the citizen home guard", async () => {
-    cookieStore.value = encoded(DEFAULT_DEMO_SESSION);
-    await expect(requireDemoSession()).resolves.toEqual(DEFAULT_DEMO_SESSION);
+  it("allows authenticated access to /home", async () => {
+    cookieStore.value = signedSession();
+    await expect(requireSession()).resolves.toEqual(USER_SESSION);
     expect(redirect).not.toHaveBeenCalled();
   });
 
+  it("stores the authenticated user identity in a signed session", async () => {
+    cookieStore.value = signedSession();
+    await expect(getSession()).resolves.toEqual(USER_SESSION);
+  });
+
+  it("rejects a tampered session cookie", async () => {
+    const token = signedSession();
+    cookieStore.value = `${token}tampered`;
+    await expect(getSession()).resolves.toBeNull();
+  });
+
+  it("rejects a malformed session cookie", async () => {
+    cookieStore.value = Buffer.from(JSON.stringify(USER_SESSION), "utf8").toString("base64url");
+    await expect(getSession()).resolves.toBeNull();
+  });
+
+  it("rejects an expired session cookie", async () => {
+    cookieStore.value = createSessionToken(USER_SESSION.userId, {
+      secret: TEST_SECRET,
+      now: NOW - 60 * 60 * 8 - 1,
+      maxAgeSeconds: 60 * 60 * 8,
+    });
+    await expect(getSession()).resolves.toBeNull();
+  });
+
   it("redirects an existing session away from login", async () => {
-    cookieStore.value = encoded(DEFAULT_DEMO_SESSION);
-    await redirectIfDemoSession();
+    cookieStore.value = signedSession();
+    await redirectIfSession();
     expect(redirect).toHaveBeenCalledWith("/home");
   });
 
-  it("creates the default under-verification session", async () => {
-    await enterDemoSession();
+  it("creates a signed user-centric session cookie", async () => {
+    await createSession(USER_SESSION.userId);
     const [name, value] = cookieStore.set.mock.calls[0] as [string, string, Record<string, unknown>];
     expect(name).toBe("epfo_demo_session");
-    expect(JSON.parse(Buffer.from(value, "base64url").toString("utf8"))).toEqual(DEFAULT_DEMO_SESSION);
-    expect(cookieStore.set.mock.calls[0][2]).toMatchObject({ httpOnly: true, sameSite: "lax", secure: false });
+    expect(value.split(".")).toHaveLength(2);
+    expect(cookieStore.set.mock.calls[0][2]).toMatchObject({ httpOnly: true, sameSite: "lax", secure: false, maxAge: 60 * 60 * 8 });
     expect(redirect).toHaveBeenCalledWith("/home");
   });
 
   it("signs out by deleting the session and returning public", async () => {
-    await signOutDemoSession();
+    await signOutSession();
     expect(cookieStore.delete).toHaveBeenCalledWith("epfo_demo_session");
     expect(redirect).toHaveBeenCalledWith("/");
   });
