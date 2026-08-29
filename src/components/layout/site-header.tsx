@@ -48,13 +48,13 @@ export function SiteHeader({ isAuthenticated, displayName, currentLocale, labels
                       <li>
                         <Link href="/home" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-teal-50 hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                           <span aria-hidden="true" className="text-lg text-slate-500">🏠</span>
-                          <span>{labels.homeLabel ?? "Home"}</span>
+                          <span>{labels.navigation.find((n) => n.href === "/home")?.label ?? "Home"}</span>
                         </Link>
                       </li>
                       <li>
                         <Link href="/claim/status" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-teal-50 hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                           <span aria-hidden="true" className="text-lg text-slate-500">📋</span>
-                          <span>{labels.navigation.find((n) => n.href === "/claim/status")?.label ?? labels.myClaimsLabel ?? "My claims"}</span>
+                          <span>{labels.navigation.find((n) => n.href === "/claim/status")?.label ?? "My claims"}</span>
                         </Link>
                       </li>
                       <li>
