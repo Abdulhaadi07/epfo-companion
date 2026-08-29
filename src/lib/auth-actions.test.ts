@@ -27,12 +27,12 @@ describe("auth actions", () => {
     vi.mocked(authenticateUser).mockResolvedValue("synthetic-user-ready");
 
     const formData = new FormData();
-    formData.set("loginId", "sample-ready");
+    formData.set("uan", "100000000001");
     formData.set("password", SAMPLE_ACCOUNT_PASSWORD);
 
     await loginAction(formData);
 
-    expect(authenticateUser).toHaveBeenCalledWith("sample-ready", SAMPLE_ACCOUNT_PASSWORD);
+    expect(authenticateUser).toHaveBeenCalledWith("100000000001", SAMPLE_ACCOUNT_PASSWORD);
     expect(createSession).toHaveBeenCalledWith("synthetic-user-ready");
   });
 
@@ -40,7 +40,7 @@ describe("auth actions", () => {
     vi.mocked(authenticateUser).mockResolvedValue(null);
 
     const formData = new FormData();
-    formData.set("loginId", "sample-ready");
+    formData.set("uan", "100000000001");
     formData.set("password", "wrong-password");
 
     await expect(loginAction(formData)).rejects.toThrow("NEXT_REDIRECT");
@@ -51,7 +51,18 @@ describe("auth actions", () => {
 
   it("redirects back to login for malformed form data", async () => {
     const formData = new FormData();
-    formData.set("loginId", "sample-ready");
+    formData.set("uan", "100000000001");
+
+    await expect(loginAction(formData)).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(redirect).toHaveBeenCalledWith("/login?error=auth");
+    expect(authenticateUser).not.toHaveBeenCalled();
+  });
+
+  it("redirects back to login for an invalid UAN format", async () => {
+    const formData = new FormData();
+    formData.set("uan", "sample-ready");
+    formData.set("password", SAMPLE_ACCOUNT_PASSWORD);
 
     await expect(loginAction(formData)).rejects.toThrow("NEXT_REDIRECT");
 
@@ -64,7 +75,7 @@ describe("auth actions", () => {
 
     await loginSampleAccountAction();
 
-    expect(authenticateUser).toHaveBeenCalledWith(DEFAULT_SAMPLE_ACCOUNT.loginId, SAMPLE_ACCOUNT_PASSWORD);
+    expect(authenticateUser).toHaveBeenCalledWith(DEFAULT_SAMPLE_ACCOUNT.uan, SAMPLE_ACCOUNT_PASSWORD);
     expect(createSession).toHaveBeenCalledWith("synthetic-user-under_verification");
   });
 });

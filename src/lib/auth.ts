@@ -1,11 +1,12 @@
 import { compare } from "bcryptjs";
 import { createDatabase } from "@/db/client";
+import { parseUan } from "@/domain/auth/uan";
 import { createUserRepository } from "@/repositories/user-repository";
 
 export const AUTH_ERROR_MESSAGE = "Login details could not be verified.";
 
 export type AuthenticateUserDeps = {
-  findByLoginId: (loginId: string) => Promise<{ id: string; passwordHash: string } | undefined>;
+  findByUan: (uan: string) => Promise<{ id: string; passwordHash: string } | undefined>;
   comparePassword: (password: string, hash: string) => Promise<boolean>;
 };
 
@@ -14,20 +15,20 @@ function createDefaultAuthDeps(): AuthenticateUserDeps {
   const userRepository = createUserRepository(db);
 
   return {
-    findByLoginId: (loginId) => userRepository.findByLoginId(loginId),
+    findByUan: (uan) => userRepository.findByUan(uan),
     comparePassword: compare,
   };
 }
 
 export async function authenticateUser(
-  loginId: string,
+  uan: string,
   password: string,
   deps: AuthenticateUserDeps = createDefaultAuthDeps(),
 ): Promise<string | null> {
-  const normalizedLoginId = loginId.trim();
-  if (!normalizedLoginId || !password) return null;
+  const normalizedUan = parseUan(uan);
+  if (!normalizedUan || !password) return null;
 
-  const user = await deps.findByLoginId(normalizedLoginId);
+  const user = await deps.findByUan(normalizedUan);
   if (!user) return null;
 
   const valid = await deps.comparePassword(password, user.passwordHash);

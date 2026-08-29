@@ -10,6 +10,23 @@ const scenarioNames: Record<DemoScenarioId, string> = {
   REJECTED: "Tara Iyer",
 };
 
+const scenarioUans: Record<DemoScenarioId, string> = {
+  READY: "100000000001",
+  UNDER_VERIFICATION: "100000000002",
+  ACTION_REQUIRED: "100000000003",
+  REJECTED: "100000000004",
+};
+
+const scenarioRegions: Record<DemoScenarioId, string> = {
+  READY: "Maharashtra",
+  UNDER_VERIFICATION: "Karnataka",
+  ACTION_REQUIRED: "Maharashtra",
+  REJECTED: "Tamil Nadu",
+};
+
+export const SYNTHETIC_USER_IDS = DEMO_SCENARIO_IDS.map((scenarioId) => `synthetic-user-${scenarioId.toLowerCase()}`);
+export const SYNTHETIC_CLAIM_IDS = DEMO_SCENARIO_IDS.map((scenarioId) => `synthetic-claim-${scenarioId.toLowerCase()}`);
+
 const scenarioReadiness: Record<DemoScenarioId, {
   identityStatus: ReadinessStatus;
   bankStatus: ReadinessStatus;
@@ -50,12 +67,12 @@ export async function buildSeedData(password = "sample-password"): Promise<SeedD
 
     data.users.push({
       id: userId,
-      loginId: `sample-${prefix}`,
+      uan: scenarioUans[scenarioId],
       passwordHash,
       displayName: scenarioNames[scenarioId],
       identityStatus: readiness.identityStatus,
       preferredLanguage: "en",
-      preferredRegion: "Maharashtra",
+      preferredRegion: scenarioRegions[scenarioId],
     });
     data.employmentRecords.push({
       id: employmentId,

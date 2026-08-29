@@ -1,5 +1,19 @@
 import { ServiceHandoff } from "@/components/experience/service-handoff";
+import { getServiceHandoffLabels } from "@/i18n/localize-views";
+import { getTranslator } from "@/i18n/server";
 
-export default function ClaimStartPage() {
-  return <ServiceHandoff eyebrow="Get my PF" title="Start with a clear plan for getting your PF" description="The guided PF journey will help you understand whether you are ready, check what you need, and review your details before a simulated submission." nextStep="The full claim journey is the flagship direction for EPFO Companion and will be added next. No real claim is created or submitted here." />;
+export default async function ClaimStartPage() {
+  const { t } = await getTranslator();
+
+  return (
+    <ServiceHandoff
+      eyebrow={t("claim.start.eyebrow")}
+      title={t("claim.start.title")}
+      description={t("claim.start.description")}
+      nextStepHeading={t("claim.start.nextStepHeading")}
+      nextStep={t("claim.start.nextStep")}
+      variant="info"
+      labels={getServiceHandoffLabels(t)}
+    />
+  );
 }

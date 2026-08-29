@@ -3,17 +3,17 @@ import { AUTH_ERROR_MESSAGE, authenticateUser } from "./auth";
 
 describe("authenticateUser", () => {
   it("returns the user id for valid credentials", async () => {
-    const userId = await authenticateUser("sample-ready", "sample-password", {
-      findByLoginId: vi.fn(async () => ({ id: "synthetic-user-ready", passwordHash: "hashed" })),
+    const userId = await authenticateUser("100000000001", "sample-password", {
+      findByUan: vi.fn(async () => ({ id: "synthetic-user-ready", passwordHash: "hashed" })),
       comparePassword: vi.fn(async () => true),
     });
 
     expect(userId).toBe("synthetic-user-ready");
   });
 
-  it("returns null for an unknown login id", async () => {
-    const userId = await authenticateUser("missing-user", "sample-password", {
-      findByLoginId: vi.fn(async () => undefined),
+  it("returns null for an unknown UAN", async () => {
+    const userId = await authenticateUser("100000000099", "sample-password", {
+      findByUan: vi.fn(async () => undefined),
       comparePassword: vi.fn(async () => true),
     });
 
@@ -21,8 +21,8 @@ describe("authenticateUser", () => {
   });
 
   it("returns null for an incorrect password", async () => {
-    const userId = await authenticateUser("sample-ready", "wrong-password", {
-      findByLoginId: vi.fn(async () => ({ id: "synthetic-user-ready", passwordHash: "hashed" })),
+    const userId = await authenticateUser("100000000001", "wrong-password", {
+      findByUan: vi.fn(async () => ({ id: "synthetic-user-ready", passwordHash: "hashed" })),
       comparePassword: vi.fn(async () => false),
     });
 
@@ -30,14 +30,25 @@ describe("authenticateUser", () => {
   });
 
   it("returns null for blank credentials", async () => {
-    const findByLoginId = vi.fn();
+    const findByUan = vi.fn();
     const userId = await authenticateUser("   ", "sample-password", {
-      findByLoginId,
+      findByUan,
       comparePassword: vi.fn(async () => true),
     });
 
     expect(userId).toBeNull();
-    expect(findByLoginId).not.toHaveBeenCalled();
+    expect(findByUan).not.toHaveBeenCalled();
+  });
+
+  it("returns null for an invalid UAN format", async () => {
+    const findByUan = vi.fn();
+    const userId = await authenticateUser("sample-ready", "sample-password", {
+      findByUan,
+      comparePassword: vi.fn(async () => true),
+    });
+
+    expect(userId).toBeNull();
+    expect(findByUan).not.toHaveBeenCalled();
   });
 
   it("exposes a generic authentication error message", () => {

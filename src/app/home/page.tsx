@@ -4,53 +4,75 @@ import { PageContainer } from "@/components/layout/page-container";
 import { ClaimOverview } from "@/components/home/claim-overview";
 import { ClaimQuestion } from "@/components/home/claim-question";
 import { CitizenSummary } from "@/components/home/citizen-summary";
-import { getClaimPresentation } from "@/lib/claim-presentation";
+import { getCitizenHomeView } from "@/application/citizen-home";
+import { localizeCitizenHomeView } from "@/i18n/localize-views";
+import { getTranslator } from "@/i18n/server";
 import { requireSession } from "@/lib/demo-session";
-import { loadUserHomeData } from "@/lib/user-account";
-
-function formatCurrencyInPaise(amountInPaise: number) {
-  return new Intl.NumberFormat("en-IN", { currency: "INR", maximumFractionDigits: 2, style: "currency" }).format(amountInPaise / 100);
-}
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${date}T00:00:00Z`));
-}
 
 export default async function CitizenHomePage() {
   const session = await requireSession();
-  const account = await loadUserHomeData(session.userId);
-  if (!account) notFound();
+  const view = await getCitizenHomeView(session.userId);
+  if (!view) notFound();
 
-  const { user, employment, pfAccount, claim } = account;
-  const presentation = getClaimPresentation(claim.currentStatus);
-  const employmentDates = employment.endDate
-    ? `${formatDate(employment.startDate)} – ${formatDate(employment.endDate)}`
-    : `${formatDate(employment.startDate)} – Present`;
+  const { t } = await getTranslator();
+  const localized = localizeCitizenHomeView(t, view);
 
   return (
-    <section className="py-12 sm:py-16">
-      <PageContainer className="max-w-5xl">
-        <div className="mb-9 flex flex-col gap-3 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="eyebrow">Your home</p>
-            <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">Welcome back, {user.displayName}</h1>
-            <p className="mt-4 text-body-lg">Here is the latest view of your PF task.</p>
-          </div>
-          <p className="text-xs font-medium text-[var(--brand-dark)]">Synthetic account · Prototype only</p>
-        </div>
+    <section className="py-6 sm:py-8">
+      <PageContainer className="max-w-3xl">
+        <header className="mb-6">
+          <p className="text-sm font-medium text-[var(--muted)]">
+            {localized.greeting.hiLabel} {localized.greeting.displayName}
+          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+            {localized.taskHeadline}
+          </h1>
+        </header>
 
-        <ClaimOverview presentation={presentation} />
+        {localized.activeClaim ? (
+          <ClaimOverview
+            title={localized.activeClaim.title}
+            presentation={localized.activeClaim.presentation}
+            reasonSummaries={localized.activeClaim.reasonSummaries}
+            timelinePreview={localized.activeClaim.timelinePreview}
+            labels={localized.claimOverviewLabels}
+          />
+        ) : (
+          <article className="rounded-2xl border border-[var(--border)] border-l-4 border-l-emerald-500 bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3" role="status">
+              <p className="font-semibold text-emerald-950">{localized.noClaim.readyToBegin}</p>
+              <p className="mt-1 text-sm leading-6 text-emerald-900">
+                {localized.noClaim.readyToBeginMessage}
+              </p>
+            </div>
+            <h2 className="mt-5 text-xl font-bold tracking-tight text-slate-950">{localized.noClaim.startWithdrawalTitle}</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-800">
+              {localized.noClaim.startWithdrawalDescription}
+            </p>
+            <Link
+              href="/claim/start"
+              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[var(--brand)] px-5 text-sm font-semibold text-white hover:bg-[var(--brand-dark)] sm:w-auto"
+            >
+              {localized.noClaim.startPfClaim}
+            </Link>
+          </article>
+        )}
+
         <CitizenSummary
-          balance={formatCurrencyInPaise(pfAccount.balanceInPaise)}
-          employer={employment.employerName}
-          employmentDates={employmentDates}
-          readiness={presentation.readinessSummary}
+          accountSummary={localized.accountSummary}
+          employmentSummary={localized.employmentSummary}
+          readiness={localized.readiness}
+          labels={localized.citizenSummaryLabels}
         />
-        <ClaimQuestion />
+        <ClaimQuestion helpPrompt={localized.helpPrompt} />
 
-        <div className="mt-8 flex flex-col gap-3 border-t border-[var(--border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-5 text-[var(--muted)]">This account uses synthetic data. It is not an official EPFO service.</p>
-          <Link href="/" className="inline-flex min-h-11 items-center font-semibold text-[var(--brand-dark)] underline-offset-4 hover:underline">Explore public experience</Link>
+        <div className="mt-8 border-t border-[var(--border)] pt-5">
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--brand-dark)] underline-offset-4 hover:underline"
+          >
+            {localized.explorePublicExperience}
+          </Link>
         </div>
       </PageContainer>
     </section>

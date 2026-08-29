@@ -48,7 +48,7 @@ describe("read-only repositories", () => {
     const eventRepository = createClaimEventRepository(db as never);
 
     expect(await userRepository.findById("u1")).toBe(user);
-    expect(await userRepository.findByLoginId("login-1")).toBe(user);
+    expect(await userRepository.findByUan("100000000001")).toBe(user);
     expect(await employmentRepository.findById("e1")).toBe(employment);
     expect(await employmentRepository.listByUserId("u1")).toEqual([employment]);
     expect(await accountRepository.findById("p1")).toBe(account);

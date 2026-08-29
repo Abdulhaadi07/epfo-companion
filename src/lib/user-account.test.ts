@@ -4,12 +4,12 @@ import { getUserDisplayName, loadUserHomeData } from "./user-account";
 
 const user = {
   id: "synthetic-user-under_verification",
-  loginId: "sample-under_verification",
+  uan: "100000000002",
   passwordHash: "hashed",
   displayName: "Mira Sen",
   identityStatus: "UNDER_VERIFICATION",
   preferredLanguage: "en",
-  preferredRegion: "Maharashtra",
+  preferredRegion: "Karnataka",
   createdAt: new Date(),
   updatedAt: new Date(),
 } satisfies UserRecord;
@@ -17,9 +17,9 @@ const user = {
 const employment = {
   id: "synthetic-employment-under_verification",
   userId: user.id,
-  employerName: "Northline Retail Pvt. Ltd.",
-  startDate: "2020-04-01",
-  endDate: "2024-08-31",
+  employerName: "Bengaluru Tech Park Services Ltd",
+  startDate: "2019-06-15",
+  endDate: "2025-11-30",
   createdAt: new Date(),
   updatedAt: new Date(),
 } satisfies EmploymentRecord;
@@ -30,7 +30,7 @@ const pfAccount = {
   employmentId: employment.id,
   syntheticMemberId: "SYN-MEMBER-UNDER_VERIFICATION",
   balanceInPaise: 18425000,
-  bankDisplayName: "State Bank of India",
+  bankDisplayName: "HDFC Bank",
   bankStatus: "UNDER_VERIFICATION",
   kycStatus: "UNDER_VERIFICATION",
   createdAt: new Date(),

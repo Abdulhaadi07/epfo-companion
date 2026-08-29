@@ -20,6 +20,14 @@ describe("demo scenario registry", () => {
     expect(Object.keys(demoScenarioFactories).sort()).toEqual([...DEMO_SCENARIO_IDS].sort());
   });
 
+  it("uses distinct employer, balance, and bank fixtures per scenario", () => {
+    const profiles = DEMO_SCENARIO_IDS.map((id) => createDemoScenario(id));
+    expect(new Set(profiles.map((scenario) => scenario.employment.employerName)).size).toBe(4);
+    expect(new Set(profiles.map((scenario) => scenario.pfAccount.balanceInPaise)).size).toBe(4);
+    expect(new Set(profiles.map((scenario) => scenario.pfAccount.bankDisplayName)).size).toBe(4);
+    expect(new Set(profiles.map((scenario) => scenario.citizen.name)).size).toBe(4);
+  });
+
   it("uses the bank mismatch reason for action required", () => {
     const scenario = createDemoScenario("ACTION_REQUIRED");
     expect(scenario.claim.status).toBe("ACTION_REQUIRED");

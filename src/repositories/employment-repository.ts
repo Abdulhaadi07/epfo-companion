@@ -9,5 +9,14 @@ export function createEmploymentRepository(db: RepositoryDatabase) {
       return rows[0];
     },
     async listByUserId(userId: string): Promise<EmploymentRecord[]> { return db.select().from(employmentRecords).where(eq(employmentRecords.userId, userId)); },
+    async updateEndDate(id: string, endDate: string): Promise<void> {
+      await db
+        .update(employmentRecords)
+        .set({
+          endDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(employmentRecords.id, id));
+    },
   };
 }

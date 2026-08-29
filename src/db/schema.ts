@@ -27,14 +27,14 @@ const timestamps = {
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
-  loginId: text("login_id").notNull(),
+  uan: text("uan").notNull(),
   passwordHash: text("password_hash").notNull(),
   displayName: text("display_name").notNull(),
   identityStatus: readinessStatusEnum("identity_status").notNull(),
   preferredLanguage: text("preferred_language").notNull(),
   preferredRegion: text("preferred_region").notNull(),
   ...timestamps,
-}, (table) => [uniqueIndex("users_login_id_unique").on(table.loginId)]);
+}, (table) => [uniqueIndex("users_uan_unique").on(table.uan)]);
 
 export const employmentRecords = pgTable("employment_records", {
   id: text("id").primaryKey(),

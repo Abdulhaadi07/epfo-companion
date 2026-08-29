@@ -1,5 +1,17 @@
-import type { ClaimStatus } from "@/domain/claims";
+import { getAllowedClaimActions, type ClaimAction, type ClaimReasonCode, type ClaimStatus } from "@/domain/claims";
+import type { TranslationKey } from "@/i18n/keys";
+import type { Translator } from "@/i18n/server";
+import { translate } from "@/i18n/translate";
 import type { StatusSeverity } from "@/components/ui/status-badge";
+import {
+  CLAIM_ACTION_LABEL_KEYS,
+  CLAIM_ACTION_REQUIRED_STATUSES,
+  CLAIM_REASON_NEXT_STEP_OVERRIDE_KEYS,
+  CLAIM_REASON_SITUATION_OVERRIDE_KEYS,
+  CLAIM_REASON_SUMMARY_KEYS,
+  CLAIM_STATUS_LABEL_KEYS,
+  CLAIM_STATUS_PRESENTATION_KEYS,
+} from "./claim-presentation-keys";
 
 export type ClaimPresentation = {
   label: string;
@@ -13,42 +25,145 @@ export type ClaimPresentation = {
   readinessSummary: string;
 };
 
-const presentations: Record<ClaimStatus, ClaimPresentation> = {
-  DRAFT: {
-    label: "Getting ready", severity: "neutral", situation: "Your PF task has been started but is not ready to submit yet.", actionRequired: true, actionMessage: "Yes, you have a few readiness steps to complete.", nextStep: "Check your details and finish the readiness check.", actionLabel: "Get ready to claim", actionHref: "/claim/start", readinessSummary: "Readiness check still to do",
-  },
-  READY: {
-    label: "Ready to submit", severity: "success", situation: "Your details are ready for the next step in this PF task.", actionRequired: true, actionMessage: "Yes, you can review and submit this claim.", nextStep: "Review your claim details before the simulated submission.", actionLabel: "Start my claim", actionHref: "/claim/start", readinessSummary: "Ready for review",
-  },
-  SUBMITTED: {
-    label: "Received", severity: "info", situation: "Your claim has been submitted and is waiting for verification to begin.", actionRequired: false, actionMessage: "No, there is nothing you need to do right now.", nextStep: "We will show you when the verification stage begins.", actionLabel: "View my claim", actionHref: "/claim/status", readinessSummary: "Claim submitted",
-  },
-  UNDER_VERIFICATION: {
-    label: "Under verification", severity: "info", situation: "Your claim has been received and is currently being checked.", actionRequired: false, actionMessage: "No, you do not need to do anything right now.", nextStep: "Check your claim status later for the next update.", actionLabel: "View my claim", actionHref: "/claim/status", readinessSummary: "Checks are in progress",
-  },
-  ACTION_REQUIRED: {
-    label: "Something needs your attention", severity: "warning", situation: "Your claim has paused because one detail needs to be fixed.", actionRequired: true, actionMessage: "Yes, please review the issue before the claim can continue.", nextStep: "Understand the issue and follow the suggested fix.", actionLabel: "Fix this problem", actionHref: "/claim/status", readinessSummary: "One detail needs attention",
-  },
-  REJECTED: {
-    label: "Your claim couldn't continue", severity: "danger", situation: "Your claim could not continue in its current form and requires attention.", actionRequired: true, actionMessage: "Yes, review why this happened before trying again.", nextStep: "Understand the reason and follow the available resolution steps.", actionLabel: "Understand the problem", actionHref: "/claim/status", readinessSummary: "Resolution needed",
-  },
-  RESOLUTION: {
-    label: "Being resolved", severity: "warning", situation: "A problem has been identified and is being worked through.", actionRequired: true, actionMessage: "Yes, complete the suggested resolution step.", nextStep: "Finish the fix so the claim can be submitted again.", actionLabel: "Continue the fix", actionHref: "/claim/status", readinessSummary: "Resolution in progress",
-  },
-  RESUBMITTED: {
-    label: "Submitted again", severity: "info", situation: "Your updated claim has been submitted again for checking.", actionRequired: false, actionMessage: "No, you do not need to do anything right now.", nextStep: "Watch for the next verification update.", actionLabel: "View my claim", actionHref: "/claim/status", readinessSummary: "Updated claim submitted",
-  },
-  APPROVED: {
-    label: "Approved", severity: "success", situation: "Your claim has been approved and is moving towards settlement.", actionRequired: false, actionMessage: "No, there is nothing you need to do right now.", nextStep: "Follow the settlement progress until it is complete.", actionLabel: "View my claim", actionHref: "/claim/status", readinessSummary: "Claim approved",
-  },
-  SETTLEMENT: {
-    label: "Being settled", severity: "info", situation: "Your approved claim is being prepared for settlement.", actionRequired: false, actionMessage: "No, there is nothing you need to do right now.", nextStep: "Check your claim status for the settlement update.", actionLabel: "View my claim", actionHref: "/claim/status", readinessSummary: "Settlement in progress",
-  },
-  SETTLED: {
-    label: "Complete", severity: "success", situation: "This claim journey has been completed.", actionRequired: false, actionMessage: "No, there is nothing you need to do right now.", nextStep: "Review the completed claim details.", actionLabel: "View my claim", actionHref: "/claim/status", readinessSummary: "Claim complete",
-  },
+export type ClaimPresentationModel = {
+  labelKey: TranslationKey;
+  severity: StatusSeverity;
+  situationKey: TranslationKey;
+  actionRequired: boolean;
+  actionMessageKey: TranslationKey;
+  nextStepKey: TranslationKey;
+  actionLabelKey: TranslationKey;
+  actionHref: string;
+  readinessSummaryKey: TranslationKey;
 };
 
+export type ClaimPresentationInput = {
+  status: ClaimStatus;
+  reasonCodes: readonly ClaimReasonCode[];
+  allowedActions?: readonly ClaimAction[];
+};
+
+const statusSeverity: Record<ClaimStatus, StatusSeverity> = {
+  DRAFT: "neutral",
+  READY: "success",
+  SUBMITTED: "info",
+  UNDER_VERIFICATION: "info",
+  ACTION_REQUIRED: "warning",
+  REJECTED: "danger",
+  RESOLUTION: "warning",
+  RESUBMITTED: "info",
+  APPROVED: "success",
+  SETTLEMENT: "info",
+  SETTLED: "success",
+};
+
+const defaultActionHrefs: Record<ClaimStatus, string> = {
+  DRAFT: "/claim/start",
+  READY: "/claim/start",
+  SUBMITTED: "/claim/status",
+  UNDER_VERIFICATION: "/claim/status",
+  ACTION_REQUIRED: "/claim/status",
+  REJECTED: "/claim/status",
+  RESOLUTION: "/claim/status",
+  RESUBMITTED: "/claim/status",
+  APPROVED: "/claim/status",
+  SETTLEMENT: "/claim/status",
+  SETTLED: "/claim/status",
+};
+
+const actionHrefs: Record<ClaimAction, string> = {
+  COMPLETE_READINESS: "/claim/start",
+  SUBMIT_CLAIM: "/claim/start",
+  VIEW_STATUS: "/claim/status",
+  UPDATE_BANK_DETAILS: "/claim/status",
+  VERIFY_BANK_ACCOUNT: "/claim/status",
+  ADD_EXIT_DATE: "/claim/status",
+  COMPLETE_KYC: "/claim/status",
+  VERIFY_IDENTITY: "/claim/status",
+  UPLOAD_DOCUMENT: "/claim/status",
+  VIEW_REJECTION_REASON: "/claim/status",
+  FIX_CLAIM: "/claim/status",
+  RESUBMIT_CLAIM: "/claim/status",
+  VIEW_APPROVAL: "/claim/status",
+  TRACK_SETTLEMENT: "/claim/status",
+  VIEW_SETTLEMENT: "/claim/status",
+};
+
+const informationalActions = new Set<ClaimAction>([
+  "VIEW_STATUS",
+  "VIEW_REJECTION_REASON",
+  "VIEW_APPROVAL",
+  "TRACK_SETTLEMENT",
+  "VIEW_SETTLEMENT",
+]);
+
+function selectPrimaryAction(allowedActions: readonly ClaimAction[]): ClaimAction | undefined {
+  return allowedActions.find((action) => !informationalActions.has(action)) ?? allowedActions[0];
+}
+
+export function getReasonSummaryKeys(reasonCodes: readonly ClaimReasonCode[]): readonly TranslationKey[] {
+  return reasonCodes.map((reasonCode) => CLAIM_REASON_SUMMARY_KEYS[reasonCode]);
+}
+
+export function buildClaimPresentation(input: ClaimPresentationInput): ClaimPresentationModel {
+  const presentationKeys = CLAIM_STATUS_PRESENTATION_KEYS[input.status];
+  const allowedActions = input.allowedActions ?? getAllowedClaimActions({
+    status: input.status,
+    reasonCodes: input.reasonCodes,
+  });
+  const primaryReason = input.reasonCodes[0];
+  const situationOverride = primaryReason
+    ? CLAIM_REASON_SITUATION_OVERRIDE_KEYS[input.status]?.[primaryReason]
+    : undefined;
+  const nextStepOverride = primaryReason
+    ? CLAIM_REASON_NEXT_STEP_OVERRIDE_KEYS[input.status]?.[primaryReason]
+    : undefined;
+  const primaryAction = selectPrimaryAction(allowedActions);
+
+  return {
+    labelKey: CLAIM_STATUS_LABEL_KEYS[input.status],
+    severity: statusSeverity[input.status],
+    situationKey: situationOverride ?? presentationKeys.situation,
+    actionRequired: CLAIM_ACTION_REQUIRED_STATUSES.has(input.status),
+    actionMessageKey: presentationKeys.actionMessage,
+    nextStepKey: nextStepOverride ?? presentationKeys.nextStep,
+    actionLabelKey: primaryAction ? CLAIM_ACTION_LABEL_KEYS[primaryAction] : presentationKeys.defaultAction,
+    actionHref: primaryAction ? actionHrefs[primaryAction] : defaultActionHrefs[input.status],
+    readinessSummaryKey: presentationKeys.readinessSummary,
+  };
+}
+
+export function localizeClaimPresentation(t: Translator, model: ClaimPresentationModel): ClaimPresentation {
+  return {
+    label: t(model.labelKey),
+    severity: model.severity,
+    situation: t(model.situationKey),
+    actionRequired: model.actionRequired,
+    actionMessage: t(model.actionMessageKey),
+    nextStep: t(model.nextStepKey),
+    actionLabel: t(model.actionLabelKey),
+    actionHref: model.actionHref,
+    readinessSummary: t(model.readinessSummaryKey),
+  };
+}
+
+export function localizeReasonSummaries(
+  t: Translator,
+  keys: readonly TranslationKey[],
+): readonly string[] {
+  return keys.map((key) => t(key));
+}
+
 export function getClaimPresentation(status: ClaimStatus): ClaimPresentation {
-  return presentations[status];
+  return localizeClaimPresentation(
+    (key) => translate("en", key),
+    buildClaimPresentation({ status, reasonCodes: [] }),
+  );
+}
+
+export function getReasonSummaries(reasonCodes: readonly ClaimReasonCode[]): readonly string[] {
+  return localizeReasonSummaries(
+    (key) => translate("en", key),
+    getReasonSummaryKeys(reasonCodes),
+  );
 }

@@ -1,8 +1,8 @@
 export const PUBLIC_NAVIGATION = [
   { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
+  { label: "Services", href: "/#tasks-heading" },
   { label: "Help", href: "/help" },
-  { label: "About", href: "/about" },
+  { label: "About", href: "/#about-heading" },
 ] as const;
 
 export const AUTHENTICATED_NAVIGATION = [
